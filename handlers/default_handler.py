@@ -1,9 +1,11 @@
 import requests
+import states
 from random import choice
 from keyboards.keyboard import create_keyboard
-from aiogram import Router
+from aiogram import Router, F
 from aiogram.filters import Command
-from aiogram.types import Message
+from aiogram.types import Message, ReplyKeyboardRemove
+from aiogram.fsm.context import FSMContext
 
 default_router = Router()
 api_cat_url = 'https://api.thecatapi.com/v1/images/search'
@@ -23,3 +25,9 @@ async def cat_handler(message: Message):
         await message.answer_photo(cat_response.json()[0]['url'], caption=choice(answer_text_tu))
     else:
         await message.answer(error_message)
+
+
+@default_router.message(F.text == 'сохранить')
+async def save_cat(message: Message, state: FSMContext):
+    await state.set_state(states.DefaultStates.waiting)
+    await message.answer("Дайте фото.", reply_markup=ReplyKeyboardRemove())
