@@ -1,5 +1,6 @@
 import requests
 import states
+import utils
 from random import choice
 from keyboards.keyboard import create_keyboard
 from aiogram import Router, F
@@ -29,5 +30,9 @@ async def cat_handler(message: Message):
 
 @default_router.message(F.text == 'сохранить')
 async def save_cat(message: Message, state: FSMContext):
-    await state.set_state(states.DefaultStates.waiting)
-    await message.answer("Дайте фото.", reply_markup=ReplyKeyboardRemove())
+    is_admin = await utils.check_admin(message.from_user.id)
+    if is_admin:
+        await state.set_state(states.DefaultStates.waiting)
+        await message.answer("Дайте фото.", reply_markup=ReplyKeyboardRemove())
+    else:
+        await message.answer("Вы не администратор.", reply_markup=create_keyboard())

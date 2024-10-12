@@ -14,5 +14,14 @@ async def check_user(username, user_id, user_full_name):
             logs.new_user(username, user_id)
 
 
+async def check_admin(user_id):
+    async with aiosqlite.connect("db.db") as db:
+        cursor = await db.cursor()
+        admin_check = await cursor.execute('select * from admins where id = ?', (user_id,))
+        admin_check = await admin_check.fetchone()
+        print(admin_check)
+        return admin_check is not None
+
+
 async def save_cat(user_id, photo_id):
     pass
