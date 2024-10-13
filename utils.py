@@ -1,5 +1,12 @@
+import sqlite3
 import aiosqlite
 import logs
+from aiogram import Bot
+
+from config import Config
+
+messages = {}
+bot = Bot(token=Config.token)
 
 
 async def check_user(username, user_id, user_full_name):
@@ -23,5 +30,37 @@ async def check_admin(user_id):
         return admin_check is not None
 
 
+async def add_admin(user_id):
+    async with aiosqlite.connect("db.db") as db:
+        cursor = await db.cursor()
+        await cursor.execute('insert into admins (id) values (?)', (user_id,))
+        await db.commit()
+
+
+async def remove_admin(user_id):
+    async with aiosqlite.connect("db.db") as db:
+        cursor = await db.cursor()
+        await cursor.execute('delete from admins where id = ?', (user_id,))
+        await db.commit()
+
+
 async def save_cat(user_id, photo_id):
-    pass
+    try:
+        async with aiosqlite.connect("db.db") as db:
+            cursor = await db.cursor()
+            await cursor.execute('insert into users_cats (user_id, photo_id) values (?, ?)',
+                                 (user_id, photo_id))
+            await db.commit()
+    except sqlite3.IntegrityError:
+        return False
+    return True
+
+
+async def get_cats(user_id):
+    async with aiosqlite.connect("db.db") as db:
+        cursor = await db.cursor()
+        photos = await cursor.execute('SELECT uu.photo_id FROM users_cats uu WHERE uu.user_id = ?',
+                                      (user_id,))
+        photos = await photos.fetchone()
+        return photos
+

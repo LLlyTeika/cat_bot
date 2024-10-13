@@ -7,8 +7,10 @@ from handlers import default_router, states_router
 from config import Config
 
 
+bot = Bot(token=Config.token)
+
+
 async def main():
-    bot = Bot(token=Config.token)
     storage = MemoryStorage()
     dp = Dispatcher(bot=bot, storage=storage)
     dp.include_router(default_router)
