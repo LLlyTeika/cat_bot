@@ -16,12 +16,14 @@ answer_text_tu = ('держи', 'твой котик', 'прошу', 'пожал
 
 
 @default_router.message(Command('start'))
-async def start_handler(message: Message) -> None:
+async def start_handler(message: Message, state: FSMContext) -> None:
     await message.answer('привет, рад тебя видеть!', reply_markup=keyboard.create_keyboard())
+    await state.clear()
 
 
 @default_router.message(Command('admin'), filters.IsAdmin())
-async def admin_handler(message: Message) -> None:
+async def admin_handler(message: Message, state: FSMContext) -> None:
+    state = await state.clear()
     ReplyKeyboardRemove()
     admin_kb = [
         [
@@ -62,11 +64,23 @@ async def cat_handler(message: Message) -> None:
         await message.answer(error_message)
 
 
+@default_router.message(F.text == 'дай моего котика')
+async def my_cat_handler(message: Message) -> None:
+    photos = await utils.get_cats(message.from_user.id)
+    if photos is not None:
+        await message.answer_photo(choice(photos), caption=choice(answer_text_tu))
+    else:
+        await message.answer('у вас нет изображений :(')
+
+
 @default_router.message(F.text == 'сохранить')
-async def save_cat(message: Message, state: FSMContext):
+async def save_cat(message: Message, state: FSMContext) -> None:
     is_admin = await utils.check_admin(message.from_user.id)
     if is_admin:
         await state.set_state(states.DefaultStates.waiting_photo)
-        await message.answer("Дайте фото.", reply_markup=ReplyKeyboardRemove())
+        ReplyKeyboardRemove()
+        kb = [[types.InlineKeyboardButton(text='назад', callback_data='back')]]
+        kb = types.InlineKeyboardMarkup(inline_keyboard=kb)
+        await message.answer("Дайте фото.", reply_markup=kb)
     else:
         await message.answer("Вы не администратор.", reply_markup=keyboard.create_keyboard())
