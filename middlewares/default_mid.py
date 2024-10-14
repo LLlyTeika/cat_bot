@@ -10,7 +10,7 @@ class LoggingMiddleware(BaseMiddleware):
             user_name = event.message.from_user.username
             user_id = event.message.from_user.id
             user_full_name = event.message.from_user.full_name
-            logs.take_message(user_name)
+            logs.take_message(user_name if user_name else user_id)
             await check_user(user_name, user_id, user_full_name)
 
         return await handler(event, data)

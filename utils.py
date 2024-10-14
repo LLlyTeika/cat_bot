@@ -45,15 +45,15 @@ async def remove_admin(user_id):
 
 async def save_cat(user_id, photo_id):
     async with aiosqlite.connect("db.db") as db:
+        cursor = await db.cursor()
         try:
-            cursor = await db.cursor()
             await cursor.execute('insert into users_cats (user_id, photo_id) values (?, ?)',
                                  (user_id, photo_id))
             await db.commit()
         except sqlite3.IntegrityError:
             await db.rollback()
             return False
-        return True
+    return True
 
 
 async def get_cats(user_id):
@@ -63,7 +63,7 @@ async def get_cats(user_id):
             photos = await cursor.execute('SELECT uu.photo_id FROM users_cats '
                                           'uu WHERE uu.user_id = ?',
                                           (user_id,))
-            photos = await photos.fetchone()
+            photos = await photos.fetchall()
         else:
             user_id = user_id[1:] if user_id.startswith('@') else user_id
             uid = await cursor.execute('select id from users where tag = ?', (user_id,))

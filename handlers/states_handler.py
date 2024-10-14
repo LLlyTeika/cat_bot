@@ -3,7 +3,7 @@ import utils
 from aiogram.fsm.context import FSMContext
 from aiogram import Router, F
 from states import DefaultStates
-from aiogram.types import Message, ReplyKeyboardRemove, InputMediaPhoto
+from aiogram.types import Message, InputMediaPhoto
 from keyboards.keyboard import create_keyboard
 
 states_router = Router()
@@ -11,13 +11,19 @@ states_router = Router()
 
 @states_router.message(DefaultStates.waiting_photo)
 async def waiting_photo(message: Message, state: FSMContext) -> None:
+
     if message.photo:
         res = await utils.save_cat(message.from_user.id, message.photo[-1].file_id)
         if res:
-            await message.answer("Сохранил.", reply_markup=create_keyboard())
-            await state.clear()
+            await message.answer("Сохранил.", reply_markup=create_keyboard(await utils.check_admin(
+                message.from_user.id
+            )))
         else:
-            await message.answer('изображение уже существует', reply_markup=create_keyboard())
+            await message.answer('изображение уже существует', reply_markup=create_keyboard(
+                await utils.check_admin(message.from_user.id)
+            ))
+        if not message.media_group_id:
+            await state.clear()
     else:
         await message.answer('я жду фото')
 

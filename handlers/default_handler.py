@@ -68,7 +68,8 @@ async def cat_handler(message: Message) -> None:
 @default_router.message(F.text == 'дай моего котика')
 async def my_cat_handler(message: Message) -> None:
     photos = await utils.get_cats(message.from_user.id)
-    if photos is not None:
+    photos = [photo[0] for photo in photos]
+    if photos and photos is not None:
         await message.answer_photo(choice(photos), caption=choice(answer_text_tu))
     else:
         await message.answer('у вас нет изображений :(')
@@ -88,9 +89,12 @@ async def save_cat(message: Message, state: FSMContext) -> None:
     is_admin = await utils.check_admin(message.from_user.id)
     if is_admin:
         await state.set_state(states.DefaultStates.waiting_photo)
-        ReplyKeyboardRemove()
         kb = [[types.InlineKeyboardButton(text='назад', callback_data='back')]]
         kb = types.InlineKeyboardMarkup(inline_keyboard=kb)
-        await message.answer("Дайте фото.", reply_markup=kb)
+        await message.answer("Дайте фото.\n\nесли сохраняете альбом - "
+                             "по завершению ткните кнопку \"назад\" под этим сообщением",
+                             reply_markup=kb)
     else:
-        await message.answer("Вы не администратор.", reply_markup=keyboard.create_keyboard())
+        await message.answer("Вы не администратор.", reply_markup=keyboard.create_keyboard(
+            utils.check_admin(message.from_user.id)
+        ))
