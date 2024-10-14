@@ -59,7 +59,7 @@ async def save_cat(user_id, photo_id):
 async def get_cats(user_id):
     async with aiosqlite.connect("db.db") as db:
         cursor = await db.cursor()
-        if user_id.isdigit():
+        if isinstance(user_id, int):
             photos = await cursor.execute('SELECT uu.photo_id FROM users_cats '
                                           'uu WHERE uu.user_id = ?',
                                           (user_id,))
