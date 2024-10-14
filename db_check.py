@@ -55,7 +55,7 @@ CREATE TABLE users (
 create_users_cats_sql = """
 CREATE TABLE users_cats (
     id INTEGER NOT NULL UNIQUE,
-    user_id INTEGER NOT NULL UNIQUE,
+    user_id INTEGER NOT NULL,
     photo_id TEXT NOT NULL UNIQUE,
     PRIMARY KEY(id AUTOINCREMENT)
 );

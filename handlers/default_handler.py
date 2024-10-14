@@ -17,13 +17,14 @@ answer_text_tu = ('держи', 'твой котик', 'прошу', 'пожал
 
 @default_router.message(Command('start'))
 async def start_handler(message: Message, state: FSMContext) -> None:
-    await message.answer('привет, рад тебя видеть!', reply_markup=keyboard.create_keyboard())
+    await message.answer('привет, рад тебя видеть!', reply_markup=keyboard.create_keyboard(
+        await utils.check_admin(message.from_user.id)
+    ))
     await state.clear()
 
 
 @default_router.message(Command('admin'), filters.IsAdmin())
-async def admin_handler(message: Message, state: FSMContext) -> None:
-    state = await state.clear()
+async def admin_handler(message: Message) -> None:
     ReplyKeyboardRemove()
     admin_kb = [
         [
@@ -52,7 +53,7 @@ async def back(call: CallbackQuery, state: FSMContext) -> None:
     await call.message.delete()
 
 
-@default_router.message(lambda message: message.text == 'дай котика')
+@default_router.message(F.text == 'дай котика')
 async def cat_handler(message: Message) -> None:
     cat_response = requests.get(api_cat_url)
     if choice(range(100)) == 1 and await utils.get_cats(message.from_user.id) is not None:
@@ -71,6 +72,15 @@ async def my_cat_handler(message: Message) -> None:
         await message.answer_photo(choice(photos), caption=choice(answer_text_tu))
     else:
         await message.answer('у вас нет изображений :(')
+
+
+@default_router.message(F.text == 'дай изображения другого человека')
+async def other_cat_handler(message: Message, state: FSMContext) -> None:
+    ReplyKeyboardRemove()
+    kb = [[types.InlineKeyboardButton(text='назад', callback_data='back')]]
+    kb = types.InlineKeyboardMarkup(inline_keyboard=kb)
+    await message.answer('введи тег', reply_markup=kb)
+    await state.set_state(states.DefaultStates.waiting_user)
 
 
 @default_router.message(F.text == 'сохранить')
