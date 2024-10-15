@@ -1,5 +1,7 @@
 from aiogram import BaseMiddleware
 from aiogram.types import Update
+
+import utils
 from utils import check_user
 import logs
 
