@@ -3,7 +3,7 @@ import states
 import utils
 import filters
 from random import choice
-from keyboards import keyboard
+from keyboards import keyboard, inline_keyboard
 from aiogram import Router, F, types
 from aiogram.filters import Command
 from aiogram.types import Message, ReplyKeyboardRemove, CallbackQuery
@@ -25,31 +25,9 @@ async def start_handler(message: Message, state: FSMContext) -> None:
 
 @default_router.message(Command('admin'), filters.IsAdmin())
 async def admin_handler(message: Message) -> None:
-    ReplyKeyboardRemove()
-    admin_kb = [
-        [
-            types.InlineKeyboardButton(text='добавить', callback_data='add_admin'),
-            types.InlineKeyboardButton(text='назад', callback_data='back')
-        ]
-    ]
-    admin_kb = types.InlineKeyboardMarkup(inline_keyboard=admin_kb)
-    temp = await message.answer('хочешь добавить администратора?', reply_markup=admin_kb)
+    temp = await message.answer('хочешь добавить администратора?',
+                                reply_markup=inline_keyboard.admin_keyboard())
     utils.messages[message.from_user.id] = temp.message_id
-
-
-@default_router.callback_query(F.data == 'add_admin')
-async def add_admin(call: CallbackQuery, state: FSMContext) -> None:
-    await state.set_state(states.DefaultStates.waiting_admin)
-    back_button = [[types.InlineKeyboardButton(text='назад', callback_data='back')]]
-    back_button = types.InlineKeyboardMarkup(inline_keyboard=back_button)
-    await call.message.edit_text('отлично!\n\nвведи id администратора',
-                                 reply_markup=back_button)
-
-
-@default_router.callback_query(F.data == 'back')
-async def back(call: CallbackQuery, state: FSMContext) -> None:
-    await state.clear()
-    await call.message.delete()
 
 
 @default_router.message(F.text == 'дай котика')
@@ -73,11 +51,10 @@ async def my_cat_handler(message: Message) -> None:
         await message.answer('у вас нет изображений :(')
 
 
-@default_router.message(F.text == 'дай изображения другого человека')
+@default_router.message(F.text == 'дай изображения другого пользователя')
 async def other_cat_handler(message: Message, state: FSMContext) -> None:
     ReplyKeyboardRemove()
-    kb = [[types.InlineKeyboardButton(text='назад', callback_data='back')]]
-    kb = types.InlineKeyboardMarkup(inline_keyboard=kb)
+    kb = inline_keyboard.back()
     temp = await message.answer('введи тег', reply_markup=kb)
     utils.messages[message.from_user.id] = temp.message_id
     await state.set_state(states.DefaultStates.waiting_user)
@@ -88,11 +65,9 @@ async def save_cat(message: Message, state: FSMContext) -> None:
     is_admin = await utils.check_admin(message.from_user.id)
     if is_admin:
         await state.set_state(states.DefaultStates.waiting_photo)
-        kb = [[types.InlineKeyboardButton(text='назад', callback_data='back')]]
-        kb = types.InlineKeyboardMarkup(inline_keyboard=kb)
-        temp = await message.answer("Дайте фото.\n\nесли сохраняете альбом - "
-                             "по завершению ткните кнопку \"назад\" под этим сообщением",
-                             reply_markup=kb)
+        temp = await message.answer("Дайте фото.\n\nесли сохраняете альбом - по завершению "
+                                    "ткните кнопку \"назад\" под этим сообщением",
+                                    reply_markup=inline_keyboard.back())
         utils.messages[message.from_user.id] = temp.message_id
     else:
         await message.answer("Вы не администратор.", reply_markup=keyboard.create_keyboard(
@@ -104,9 +79,17 @@ async def save_cat(message: Message, state: FSMContext) -> None:
 async def delete_cat(message: Message, state: FSMContext) -> None:
     is_admin = await utils.check_admin(message.from_user.id)
     if is_admin:
-        photos = await utils.get_cats(message.from_user.id)
-        photos = [photo[0] for photo in photos[0:10]]
-        pass
+        utils.users_albums[message.from_user.id] = [await utils.get_albums(message.from_user.id),
+                                                    0]  # список с альбомом и индексом пагинации
+        album = utils.users_albums[message.from_user.id][0]
+        if album:
+            user_id = message.from_user.id
+            utils.messages[message.from_user.id] = (await message.answer_media_group(media=album[0]),
+                                                    await message.answer('выберите фото для удаления',
+                                                                         reply_markup=inline_keyboard.album_keyboard(
+                                                                             len(album[0]), user_id)))
+        else:
+            await message.answer('у вас нет изображений :(')
     else:
         await message.answer("Вы не администратор.", reply_markup=keyboard.create_keyboard(
             utils.check_admin(message.from_user.id)

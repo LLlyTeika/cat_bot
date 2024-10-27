@@ -3,7 +3,7 @@ import asyncio
 from middlewares.default_mid import LoggingMiddleware
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram import Bot, Dispatcher
-from handlers import default_router, states_router
+from handlers import default_router, states_router, callback_router
 from config import Config
 from db_check import start_check
 
@@ -17,6 +17,7 @@ async def main():
     dp = Dispatcher(bot=bot, storage=storage)
     dp.include_router(states_router)
     dp.include_router(default_router)
+    dp.include_router(callback_router)
     dp.update.middleware(LoggingMiddleware())
 
     await bot.delete_webhook(drop_pending_updates=True)

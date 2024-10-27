@@ -7,6 +7,7 @@ from aiogram.types import InputMediaPhoto
 from config import Config
 
 messages = {}
+users_albums = {}
 bot = Bot(token=Config.token)
 
 
@@ -57,6 +58,14 @@ async def save_cat(user_id, photo_id) -> bool:
     return True
 
 
+async def remove_cat(photo_id, user_id) -> None:
+    async with aiosqlite.connect("db.db") as db:
+        cursor = await db.cursor()
+        await cursor.execute('delete from users_cats where photo_id = ? and user_id = ?',
+                             (photo_id, user_id))
+        await db.commit()
+
+
 async def get_cats(user_id) -> list[str] | None:
     async with aiosqlite.connect("db.db") as db:
         cursor = await db.cursor()
@@ -83,7 +92,6 @@ async def get_cats(user_id) -> list[str] | None:
 
 async def get_albums(user_tag) -> list[list[InputMediaPhoto]] | None:
     photos = await get_cats(user_tag)
-    print(photos)
     albums = []
     if photos:
         for i in range(len(photos) // 10 + 1):
@@ -98,3 +106,8 @@ async def get_albums(user_tag) -> list[list[InputMediaPhoto]] | None:
     elif photos is None:
         albums = None
     return albums
+
+
+def largest_zip(li1: list | tuple, li2: list | tuple) -> list[tuple]:
+    return [(li1[i] if len(li1) > i else None, li2[i] if len(li2) > i else None, i)
+            for i in range(max(len(li1), len(li2)))]

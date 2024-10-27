@@ -4,7 +4,7 @@ from aiogram import types
 def create_keyboard(admin_check):
     keyboard = [
         [types.KeyboardButton(text='дай котика'), types.KeyboardButton(text='дай моего котика')],
-        [types.KeyboardButton(text='дай изображения другого человека')]
+        [types.KeyboardButton(text='дай изображения другого пользователя')]
     ]
 
     keyboard.append([
