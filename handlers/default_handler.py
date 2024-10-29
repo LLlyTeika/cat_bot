@@ -18,7 +18,7 @@ answer_text_tu = ('держи', 'твой котик', 'прошу', 'пожал
 @default_router.message(Command('start'))
 async def start_handler(message: Message, state: FSMContext) -> None:
     await message.answer('привет, рад тебя видеть!', reply_markup=keyboard.create_keyboard(
-        await utils.check_admin(message.from_user.id)
+        await utils.check_user_group(message.from_user.id)
     ))
     await state.clear()
 
@@ -62,23 +62,23 @@ async def other_cat_handler(message: Message, state: FSMContext) -> None:
 
 @default_router.message(F.text == 'сохранить')
 async def save_cat(message: Message, state: FSMContext) -> None:
-    is_admin = await utils.check_admin(message.from_user.id)
-    if is_admin:
+    group = await utils.check_user_group(message.from_user.id)
+    if group is not None and group in ('admin', 'vip'):
         await state.set_state(states.DefaultStates.waiting_photo)
         temp = await message.answer("Дайте фото.\n\nесли сохраняете альбом - по завершению "
                                     "ткните кнопку \"назад\" под этим сообщением",
                                     reply_markup=inline_keyboard.back())
         utils.messages[message.from_user.id] = temp.message_id
     else:
-        await message.answer("Вы не администратор.", reply_markup=keyboard.create_keyboard(
-            utils.check_admin(message.from_user.id)
+        await message.answer("Вы не находитесь в спец группе.", reply_markup=keyboard.create_keyboard(
+            utils.check_user_group(message.from_user.id)
         ))
 
 
 @default_router.message(F.text == 'удалить')
 async def delete_cat(message: Message, state: FSMContext) -> None:
-    is_admin = await utils.check_admin(message.from_user.id)
-    if is_admin:
+    group = await utils.check_user_group(message.from_user.id)
+    if group is not None and group in ('admin', 'vip'):
         utils.users_albums[message.from_user.id] = [await utils.get_albums(message.from_user.id),
                                                     0]  # список с альбомом и индексом пагинации
         album = utils.users_albums[message.from_user.id][0]
@@ -91,6 +91,6 @@ async def delete_cat(message: Message, state: FSMContext) -> None:
         else:
             await message.answer('у вас нет изображений :(')
     else:
-        await message.answer("Вы не администратор.", reply_markup=keyboard.create_keyboard(
-            utils.check_admin(message.from_user.id)
+        await message.answer("Вы не находитесь в спец группе.", reply_markup=keyboard.create_keyboard(
+            utils.check_user_group(message.from_user.id)
         ))

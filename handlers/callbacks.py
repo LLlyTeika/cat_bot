@@ -41,22 +41,17 @@ async def remove_photo(call: CallbackQuery, state: FSMContext) -> None:
     usr_photos: list[Message] = utils.messages[user_id][0]
     # переписываем дефолтный зип
     zip = utils.largest_zip
-    # await utils.messages[user_id][0][0].delete()
     # цикл перебора сообщения, подмена/удаления изображения в альбоме
     if albums:
         for msg, photo, index in zip(usr_photos, albums[pagination]):
             if msg and photo:
                 try:
                     await msg.edit_media(media=photo)
-                    print('едит')
                 except TelegramBadRequest:
                     continue
             elif photo is None:
-                print('удаляю')
                 await utils.messages[user_id][0][index].delete()
                 del utils.messages[user_id][0][index]
-            #await msg.edit_media('''InputMediaPhoto(photo) <---- мы можем заменить каждую картинку цилом. пройдись зипом по
-            #новому альбому и текущему в msg''')
         album_len = len(albums[pagination])
         await utils.messages[user_id][1].edit_text('выберите фото для удаления', reply_markup=album_keyboard(
             album_len, user_id))

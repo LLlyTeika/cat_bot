@@ -1,7 +1,7 @@
 from aiogram import types
 
 
-def create_keyboard(admin_check):
+def create_keyboard(group):
     keyboard = [
         [types.KeyboardButton(text='дай котика'), types.KeyboardButton(text='дай моего котика')],
         [types.KeyboardButton(text='дай изображения другого пользователя')]
@@ -10,7 +10,7 @@ def create_keyboard(admin_check):
     keyboard.append([
         types.KeyboardButton(text='сохранить'),
         types.KeyboardButton(text='удалить')
-    ]) if admin_check else None
+    ]) if group is not None and group in ('admin', 'vip') else None
     keyboard = types.ReplyKeyboardMarkup(keyboard=keyboard, resize_keyboard=True)
 
     return keyboard

@@ -13,12 +13,12 @@ async def waiting_photo(message: Message, state: FSMContext) -> None:
     if message.photo:
         res = await utils.save_cat(message.from_user.id, message.photo[-1].file_id)
         if res:
-            await message.answer("Сохранил.", reply_markup=create_keyboard(await utils.check_admin(
+            await message.answer("Сохранил.", reply_markup=create_keyboard(await utils.check_user_group(
                 message.from_user.id
             )))
         else:
             await message.answer('изображение уже существует', reply_markup=create_keyboard(
-                await utils.check_admin(message.from_user.id)
+                await utils.check_user_group(message.from_user.id)
             ))
         if not message.media_group_id:
             await state.clear()

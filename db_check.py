@@ -44,11 +44,12 @@ CREATE TABLE admins (
 """
 
 create_users_sql = """
-CREATE TABLE users (
-    id INTEGER NOT NULL UNIQUE,
-    full_name TEXT,
-    tag TEXT,
-    PRIMARY KEY(id)
+CREATE TABLE "users" (
+    "id" INTEGER NOT NULL UNIQUE,
+    "full_name" TEXT,
+    "tag" TEXT,
+    "user_group" TEXT NOT NULL,
+    PRIMARY KEY("id")
 );
 """
 
@@ -78,7 +79,7 @@ def start_check():
 
     # Проверка или создание таблиц
     check_or_create_table('admins', ['id'], create_admins_sql, cursor)
-    check_or_create_table('users', ['id', 'full_name', 'tag'], create_users_sql, cursor)
+    check_or_create_table('users', ['id', 'full_name', 'tag', 'user_group'], create_users_sql, cursor)
     check_or_create_table('users_cats', ['id', 'user_id', 'photo_id'], create_users_cats_sql, cursor)
 
     # Закрытие соединения
