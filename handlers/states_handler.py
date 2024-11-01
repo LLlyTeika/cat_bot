@@ -71,6 +71,18 @@ async def waiting_delete_group(message: Message, state: FSMContext) -> None:
         await message.answer('айди состоит только из цифр\nдавай ещё раз')
 
 
+@states_router.message(DefaultStates.waiting_admin, lambda msg: utils.admin_state[msg.from_user.id] == 'give_id')
+async def waiting_user_id(message: Message, state: FSMContext) -> None:
+    check_user = await utils.check_user_exists(message.text)
+    if check_user:
+        user_id = await utils.give_user_id(message.text)
+        await state.clear()
+        await utils.bot.delete_message(message.chat.id, utils.messages[message.from_user.id])
+        await message.answer(text=str(user_id))
+    else:
+        await message.answer('пользователя с таким тегом не существует')
+
+
 @states_router.message(DefaultStates.waiting_user)
 async def waiting_user(message: Message, state: FSMContext) -> None:
     user_tag = message.text

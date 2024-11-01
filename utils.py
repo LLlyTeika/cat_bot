@@ -24,10 +24,13 @@ async def check_user(username, user_id, user_full_name) -> None:
             logs.new_user(username, user_id)
 
 
-async def check_user_exists(user_id) -> bool:
+async def check_user_exists(user_id: int | str) -> bool:
     async with aiosqlite.connect("db.db") as db:
         cursor = await db.cursor()
-        user_check = await cursor.execute('select * from users where id = ?', (user_id,))
+        if isinstance(user_id, int):
+            user_check = await cursor.execute('select * from users where id = ?', (user_id,))
+        else:
+            user_check = await cursor.execute('select * from users where tag = ?', (user_id,))
         user_check = await user_check.fetchone()
         if not user_check:
             return False
@@ -40,6 +43,14 @@ async def check_user_group(user_id) -> str | None:
         user_group = await cursor.execute('select user_group from users where id = ?', (user_id,))
         user_group = await user_group.fetchone()
         return user_group[0]
+
+
+async def give_user_id(user_tag) -> int:
+    async with aiosqlite.connect("db.db") as db:
+        cursor = await db.cursor()
+        user_id = await cursor.execute('select id from users where tag = ?', (user_tag,))
+        user_id = await user_id.fetchone()
+        return user_id[0]
 
 
 async def add_admin(user_id) -> None:

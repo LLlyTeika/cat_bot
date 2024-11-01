@@ -12,6 +12,9 @@ def admin_keyboard():
             types.InlineKeyboardButton(text='vip', callback_data='vip_menu'),
         ],
         [
+            types.InlineKeyboardButton(text='получить id пользователя', callback_data='give_id')
+        ],
+        [
             types.InlineKeyboardButton(text='выйти', callback_data='exit')
         ]
     ]

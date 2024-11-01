@@ -50,8 +50,18 @@ async def vip_menu(call: CallbackQuery, state: FSMContext) -> None:
                                  reply_markup=inline_keyboard.vip_keyboard())
 
 
+@callback_router.callback_query(F.data == 'give_id')
+async def give_id(call: CallbackQuery, state: FSMContext) -> None:
+    await state.set_state(states.DefaultStates.waiting_admin)
+    utils.admin_state[call.from_user.id] = 'give_id'
+    await call.message.edit_text('отлично!\n\nвведи тег пользователя для получения id',
+                                 reply_markup=inline_keyboard.exit_main())
+
+
 @callback_router.callback_query(F.data == 'admin_menu')
 async def admin_menu(call: CallbackQuery, state: FSMContext) -> None:
+    await state.set_state(states.DefaultStates.waiting_admin)
+    utils.admin_state[call.from_user.id] = 'user_id'
     await call.message.edit_text('хочешь добавить админа?',
                                  reply_markup=inline_keyboard.admin_keyboard())
 
