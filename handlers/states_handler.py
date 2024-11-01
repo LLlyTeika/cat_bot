@@ -1,6 +1,8 @@
 import utils
 from aiogram.fsm.context import FSMContext
 from aiogram import Router, F
+
+from filters import CheckOp
 from states import DefaultStates
 from aiogram.types import Message
 from keyboards.keyboard import create_keyboard
@@ -27,12 +29,40 @@ async def waiting_photo(message: Message, state: FSMContext) -> None:
         await message.answer('я жду фото')
 
 
-@states_router.message(DefaultStates.waiting_admin)
-async def waiting_admin(message: Message, state: FSMContext) -> None:
+@states_router.message(DefaultStates.waiting_admin, lambda msg: utils.admin_state[msg.from_user.id] == 'admin')
+async def waiting_add_admin(message: Message, state: FSMContext) -> None:
     if message.text.isdigit():
         check_user = await utils.check_user_exists(int(message.text))
         if check_user:
             await utils.add_admin(int(message.text))
+            await state.clear()
+            await utils.bot.delete_message(message.chat.id, utils.messages[message.from_user.id])
+        else:
+            await message.answer('пользователя с таким айди не существует')
+    else:
+        await message.answer('айди состоит только из цифр\nдавай ещё раз')
+
+
+@states_router.message(DefaultStates.waiting_admin, lambda msg: utils.admin_state[msg.from_user.id] == 'vip')
+async def waiting_add_vip(message: Message, state: FSMContext) -> None:
+    if message.text.isdigit():
+        check_user = await utils.check_user_exists(int(message.text))
+        if check_user:
+            await utils.add_vip(int(message.text))
+            await state.clear()
+            await utils.bot.delete_message(message.chat.id, utils.messages[message.from_user.id])
+        else:
+            await message.answer('пользователя с таким айди не существует')
+    else:
+        await message.answer('айди состоит только из цифр\nдавай ещё раз')
+
+
+@states_router.message(DefaultStates.waiting_admin, lambda msg: utils.admin_state[msg.from_user.id] == 'delete')
+async def waiting_delete_group(message: Message, state: FSMContext) -> None:
+    if message.text.isdigit():
+        check_user = await utils.check_user_exists(int(message.text))
+        if check_user:
+            await utils.remove_admin(int(message.text))
             await state.clear()
             await utils.bot.delete_message(message.chat.id, utils.messages[message.from_user.id])
         else:

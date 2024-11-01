@@ -8,6 +8,7 @@ from config import Config
 
 messages = {}
 users_albums = {}
+admin_state = {}
 bot = Bot(token=Config.token)
 
 
@@ -48,10 +49,17 @@ async def add_admin(user_id) -> None:
         await db.commit()
 
 
+async def add_vip(user_id) -> None:
+    async with aiosqlite.connect("db.db") as db:
+        cursor = await db.cursor()
+        await cursor.execute('update users set user_group = "vip" where id = ?', (user_id,))
+        await db.commit()
+
+
 async def remove_admin(user_id) -> None:
     async with aiosqlite.connect("db.db") as db:
         cursor = await db.cursor()
-        await cursor.execute('delete from admins where id = ?', (user_id,))
+        await cursor.execute('update users set user_group = "user" where id = ?', (user_id,))
         await db.commit()
 
 

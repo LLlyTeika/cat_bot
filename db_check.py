@@ -78,7 +78,7 @@ def start_check():
     cursor = conn.cursor()
 
     # Проверка или создание таблиц
-    check_or_create_table('admins', ['id'], create_admins_sql, cursor)
+    # check_or_create_table('admins', ['id'], create_admins_sql, cursor)
     check_or_create_table('users', ['id', 'full_name', 'tag', 'user_group'], create_users_sql, cursor)
     check_or_create_table('users_cats', ['id', 'user_id', 'photo_id'], create_users_cats_sql, cursor)
 

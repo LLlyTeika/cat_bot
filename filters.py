@@ -10,3 +10,9 @@ class IsAdmin(BaseFilter):
         check_result = await utils.check_user_group(msg.from_user.id) == 'admin'
         logging.info('доступ разрешен' if check_result else 'доступ запрещен')
         return check_result
+
+
+class CheckOp(BaseFilter):
+    async def __call__(self, msg: TelegramObject) -> bool:
+        check_result = utils.admin_state[msg.from_user.id]
+        return check_result

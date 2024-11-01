@@ -54,7 +54,7 @@ async def my_cat_handler(message: Message) -> None:
 @default_router.message(F.text == 'дай изображения другого пользователя')
 async def other_cat_handler(message: Message, state: FSMContext) -> None:
     ReplyKeyboardRemove()
-    kb = inline_keyboard.back()
+    kb = inline_keyboard.exit_main()
     temp = await message.answer('введи тег', reply_markup=kb)
     utils.messages[message.from_user.id] = temp.message_id
     await state.set_state(states.DefaultStates.waiting_user)
@@ -66,8 +66,8 @@ async def save_cat(message: Message, state: FSMContext) -> None:
     if group is not None and group in ('admin', 'vip'):
         await state.set_state(states.DefaultStates.waiting_photo)
         temp = await message.answer("Дайте фото.\n\nесли сохраняете альбом - по завершению "
-                                    "ткните кнопку \"назад\" под этим сообщением",
-                                    reply_markup=inline_keyboard.back())
+                                    "ткните кнопку \"выйти\" под этим сообщением",
+                                    reply_markup=inline_keyboard.exit_main())
         utils.messages[message.from_user.id] = temp.message_id
     else:
         await message.answer("Вы не находитесь в спец группе.", reply_markup=keyboard.create_keyboard(

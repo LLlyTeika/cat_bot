@@ -6,19 +6,41 @@ def admin_keyboard():
     kb = [
         [
             types.InlineKeyboardButton(text='добавить', callback_data='add_admin'),
-            types.InlineKeyboardButton(text='назад', callback_data='back')
+            types.InlineKeyboardButton(text='удалить', callback_data='delete_group')
+        ],
+        [
+            types.InlineKeyboardButton(text='vip', callback_data='vip_menu'),
+        ],
+        [
+            types.InlineKeyboardButton(text='выйти', callback_data='exit')
         ]
     ]
     return types.InlineKeyboardMarkup(inline_keyboard=kb)
 
 
-def back_button():
-    button = types.InlineKeyboardButton(text='назад', callback_data='back')
+def vip_keyboard():
+    kb = [
+        [
+            types.InlineKeyboardButton(text='добавить', callback_data='add_vip'),
+            types.InlineKeyboardButton(text='удалить', callback_data='delete_group')
+        ],
+        [
+            types.InlineKeyboardButton(text='admin', callback_data='admin_menu')
+        ],
+        [
+            types.InlineKeyboardButton(text='выйти', callback_data='exit')
+        ]
+    ]
+    return types.InlineKeyboardMarkup(inline_keyboard=kb)
+
+
+def exit_button():
+    button = types.InlineKeyboardButton(text='выйти', callback_data='exit')
     return button
 
 
-def back():
-    return types.InlineKeyboardMarkup(inline_keyboard=[[back_button()]])
+def exit_main():
+    return types.InlineKeyboardMarkup(inline_keyboard=[[exit_button()]])
 
 
 def album_keyboard(album_length: int, user_id: int):

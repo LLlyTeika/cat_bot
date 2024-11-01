@@ -11,8 +11,8 @@ from keyboards import inline_keyboard
 callback_router = Router()
 
 
-@callback_router.callback_query(F.data == 'back')
-async def back(call: CallbackQuery, state: FSMContext) -> None:
+@callback_router.callback_query(F.data == 'exit')
+async def exit_main(call: CallbackQuery, state: FSMContext) -> None:
     await state.clear()
     await call.message.delete()
 
@@ -20,9 +20,40 @@ async def back(call: CallbackQuery, state: FSMContext) -> None:
 @callback_router.callback_query(F.data == 'add_admin')
 async def add_admin(call: CallbackQuery, state: FSMContext) -> None:
     await state.set_state(states.DefaultStates.waiting_admin)
-    back_button = inline_keyboard.back()
-    await call.message.edit_text('отлично!\n\nвведи id администратора',
+    utils.admin_state[call.from_user.id] = 'admin'
+    back_button = inline_keyboard.exit_main()
+    await call.message.edit_text('отлично!\n\nвведи id администратора для добавления',
                                  reply_markup=back_button)
+
+
+@callback_router.callback_query(F.data == 'add_vip')
+async def add_vip(call: CallbackQuery, state: FSMContext) -> None:
+    await state.set_state(states.DefaultStates.waiting_admin)
+    utils.admin_state[call.from_user.id] = 'vip'
+    back_button = inline_keyboard.exit_main()
+    await call.message.edit_text('хочешь добавить випа?',
+                                 reply_markup=back_button)
+
+
+@callback_router.callback_query(F.data == 'delete_group')
+async def delete_group(call: CallbackQuery, state: FSMContext) -> None:
+    await state.set_state(states.DefaultStates.waiting_admin)
+    utils.admin_state[call.from_user.id] = 'delete'
+    back_button = inline_keyboard.exit_main()
+    await call.message.edit_text('отлично!\n\nвведи id пользователя для удаления',
+                                 reply_markup=back_button)
+
+
+@callback_router.callback_query(F.data == 'vip_menu')
+async def vip_menu(call: CallbackQuery, state: FSMContext) -> None:
+    await call.message.edit_text('хочешь добавить випа?',
+                                 reply_markup=inline_keyboard.vip_keyboard())
+
+
+@callback_router.callback_query(F.data == 'admin_menu')
+async def admin_menu(call: CallbackQuery, state: FSMContext) -> None:
+    await call.message.edit_text('хочешь добавить админа?',
+                                 reply_markup=inline_keyboard.admin_keyboard())
 
 
 @callback_router.callback_query(F.data.startswith('remove_photo'))
