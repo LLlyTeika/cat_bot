@@ -30,9 +30,13 @@ async def waiting_photo(message: Message, state: FSMContext) -> None:
 @states_router.message(DefaultStates.waiting_admin)
 async def waiting_admin(message: Message, state: FSMContext) -> None:
     if message.text.isdigit():
-        await utils.add_admin(int(message.text))
-        await state.clear()
-        await utils.bot.delete_message(message.chat.id, utils.messages[message.from_user.id])
+        check_user = await utils.check_user_exists(int(message.text))
+        if check_user:
+            await utils.add_admin(int(message.text))
+            await state.clear()
+            await utils.bot.delete_message(message.chat.id, utils.messages[message.from_user.id])
+        else:
+            await message.answer('пользователя с таким айди не существует')
     else:
         await message.answer('айди состоит только из цифр\nдавай ещё раз')
 

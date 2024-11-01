@@ -23,6 +23,16 @@ async def check_user(username, user_id, user_full_name) -> None:
             logs.new_user(username, user_id)
 
 
+async def check_user_exists(user_id) -> bool:
+    async with aiosqlite.connect("db.db") as db:
+        cursor = await db.cursor()
+        user_check = await cursor.execute('select * from users where id = ?', (user_id,))
+        user_check = await user_check.fetchone()
+        if not user_check:
+            return False
+        return True
+
+
 async def check_user_group(user_id) -> str | None:
     async with aiosqlite.connect("db.db") as db:
         cursor = await db.cursor()
@@ -34,7 +44,7 @@ async def check_user_group(user_id) -> str | None:
 async def add_admin(user_id) -> None:
     async with aiosqlite.connect("db.db") as db:
         cursor = await db.cursor()
-        await cursor.execute('insert into admins (id) values (?)', (user_id,))
+        await cursor.execute('update users set user_group = "admin" where id = ?', (user_id,))
         await db.commit()
 
 
